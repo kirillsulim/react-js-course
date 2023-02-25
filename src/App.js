@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import PostList from "./components/PostList";
 import MyButton from "./components/ui/button/MyButton";
@@ -17,13 +17,41 @@ function App() {
     ]
   );
 
+  const emptyPost = {
+    title: "",
+    body: ""
+  };
+
+  const [post, setPost] = useState(emptyPost);
+
+  const addNewPost = (e) => {
+    e.preventDefault();
+    const newPost = {
+      id: Date.now(),
+      title: post.title,
+      body: post.body
+    }
+    setPosts([...posts, newPost]);
+    setPost(emptyPost);
+  };
+
 
   return (
     <div className="App">
       <form>
-        <MyInput type="text" placeholder="Title"/>
-        <MyInput type="text" placeholder="Body"/>
-        <MyButton disabled="true">Post it</MyButton>
+        <MyInput 
+          value={post.title} 
+          type="text" 
+          placeholder="Title"
+          onChange={e => setPost({...post,  title: e.target.value})}
+        />
+        <MyInput 
+          value={post.body} 
+          type="text" 
+          placeholder="Body"
+          onChange={e => setPost({...post, body: e.target.value})}
+        />
+        <MyButton onClick={addNewPost}>Post it</MyButton>
       </form>
       <PostList posts={posts} title={"Pisek postov"}/>
     </div>
