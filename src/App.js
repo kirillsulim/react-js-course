@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import PostFilter from "./components/PostFilter";
 
 import PostForm from "./components/PostForm";
 import PostList from "./components/PostList";
+import MyInput from "./components/ui/input/MyInput";
 import MySelect from "./components/ui/select/MySelect";
 
 import "./styles/app.css";
@@ -17,7 +19,28 @@ function App() {
     ]
   );
 
-  const [selectedSort, setSelectedSort] = useState("");
+  const [filter, setFilter] = useState({
+    sort: "",
+    query: ""
+  });
+
+  const sortedPosts = useMemo(
+    () => {
+      console.log("Sorted posts calculated");
+      if (filter.sort) {
+        return [...posts]
+          .sort((a, b) => a[filter.sort].localeCompare(b[filter.sort]));
+      } else {
+        return posts;
+      }
+    },
+    [filter.sort, posts]
+  );
+
+  const sortedAndFilteredPosts = useMemo(() => {
+    console.log("Filtered posts calculated");
+    return sortedPosts.filter(post => post.title.includes(filter.query))
+  }, [filter.query, sortedPosts]);
 
   const createPost = (post) => {
     setPosts([...posts, post]);
@@ -27,29 +50,12 @@ function App() {
     setPosts(posts.filter(p => p.id !== post.id));
   };
 
-  const sortPosts = (event) => {
-    let sort = event.target.value;
-    console.log(sort);
-    setSelectedSort(sort);
-    setPosts([...posts].sort((a, b) => a[sort].localeCompare(b[sort])));
-  }
-
   return (
     <div className="App">
       <PostForm create={createPost}/>
       <hr style={{margin: "15px 0"}}/>
-      <div>
-        <MySelect
-          value={selectedSort}
-          onChange={sortPosts}
-          defaultValue="Sort by"
-          options={[
-            {value: "title", name: "Sort by title"},
-            {value: "body", name: "Sort by body"}
-          ]}
-        />
-      </div>
-      <PostList remove={removePost} posts={posts} title={"Pisek postov"}/>
+      <PostFilter filter={filter} setFilter={setFilter} />
+      <PostList remove={removePost} posts={sortedAndFilteredPosts} title={"Pisek postov"}/>
     </div>
   );
 }
